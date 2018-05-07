@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="col-lg-12">
+    <h2>Sensor: {{sensor.name}}</h2>
+  </div>
+  <div class="col-lg-6">
+
+
+  <div id="mapid" style="width: 100%; height: 60%;"></div>
+  <script>
+
+    var mymap = L.map('mapid').setView([16.405804, 120.59852], 18);
+
+    L.tileLayer('http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(mymap);
+
+      marker = L.marker([{{ sensor.coordinates.y }}, {{ sensor.coordinates.x }}]);
+      marker.addTo(mymap);
+      marker.bindPopup("<b>{{sensor.id}} {{sensor.name}}</b><br>{{sensor.description}}");
+
+  </script>
+</div>
+<div class="col-lg-6">
+  <ul>
+  <li>Name: {{sensor.name}}</li>
+  <li>Description: {{sensor.description}}</li>
+  <li>Address: {{sensor.address}}</li>
+  <li>Latitude: {{sensor.coordinates.y}}</li>
+  <li>Longitude: {{sensor.coordinates.x}}</li>
+</ul>
+<a href="/sensors/export/{{sensor.id}}" class="btn btn-default" role="button">Export Data</a>
+<div class="table-responsive">
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Particulate Matter</th>
+      <th>Created at</th>
+      <th>Received at</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in data %}
+    <tr>
+      <td>{{row.particulate_matter}}</td>
+      <td>{{row.created_at}}</td>
+      <td>{{row.received_at}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+</div>
+{% endblock %}

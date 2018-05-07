@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="col-lg-12"><h2>Sensor List</h2></div>
+  <ul>
+  {% for sensor in object_list %}
+    <li><a href="/sensors/detail/{{sensor.id}}" >{{sensor.name}}</a></li>
+  {% endfor %}
+  </ul>
+{% endblock %}

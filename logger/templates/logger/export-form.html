@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="col-lg-12"><h2>{{sensor.name}} data export</h2></div>
+  <form action="/sensors/export/{{sensor.id}}" method="post">
+    {% csrf_token %}
+    <input id="id_sensor" type="hidden" name="sensor" value="{{ sensor.id }}">
+    <div class="form-group">
+      <label for="id_start_date">Start Date</label>
+      <input id="id_start_date"  class="form-control"  type="date" name="start_date" value="{{ date }}" required /></p>
+    </div>
+    <div class="form-group">
+      <label for="id_end_date">End Date:</label>
+      <input id="id_end_date"  class="form-control"  type="date" name="end_date" value="{{ date }}" required /></p>
+    </div>
+    <div class="form-group">
+      <input type="submit"  class="btn btn-default"  value="Submit" />
+    </div>
+  </form>
+{% endblock %}

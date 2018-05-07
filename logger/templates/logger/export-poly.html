@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="col-lg-12"><h2>Sensor data export</h2></div>
+  <div class="col-lg-12">
+    <div id="mapid" style="width: 800px; height: 400px;"></div>
+  </div>
+  <div class="col-lg-12">
+  <form action="/sensors/export/" method="post">
+    {% csrf_token %}
+    <input id="id_sensor" type="hidden" name="sensor" value="{{ sensor.id }}">
+    <input id="id_mul_sensors" type="hidden" name="mul_sensors">
+    <div class="form-group">
+      <label for="id_start_date">Start Date</label>
+      <input id="id_start_date"  class="form-control"  type="date" name="start_date" value="{{ date }}" required /></p>
+    </div>
+    <div class="form-group">
+      <label for="id_end_date">End Date:</label>
+      <input id="id_end_date"  class="form-control"  type="date" name="end_date" value="{{ date }}" required /></p>
+    </div>
+    <div class="form-group">
+      <input type="submit"  class="btn btn-default"  value="Submit" />
+    </div>
+  </form>
+</div>
+  <script>
+
+    var mymap = L.map('mapid').setView([16.405804, 120.59852], 18);
+
+    L.tileLayer('http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
+
+      maxZoom: 18,
+      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(mymap);
+
+    var drawnItems = new L.FeatureGroup();
+     mymap.addLayer(drawnItems);
+     var drawControl = new L.Control.Draw({
+         edit: {
+             featureGroup: drawnItems
+         }
+     });
+     mymap.addControl(drawControl);
+
+
+
+    var markers = [];
+    var selected_markers = [];
+    {% for sensor in sensors %}
+      marker = L.marker([{{ sensor.coordinates.y }}, {{ sensor.coordinates.x }}]);
+      marker.addTo(mymap);
+      marker.bindPopup("<b>{{sensor.id}} {{sensor.name}}</b><br>{{sensor.description}}");
+      console.log(marker.toGeoJSON());
+      obj = {'id': {{sensor.id}},'marker': marker.toGeoJSON()};
+      markers.push(obj);
+    {% endfor %}
+    //console.log(markers);
+
+    mymap.on(L.Draw.Event.CREATED, function (e) {
+      var type = e.layerType,
+          layer = e.layer;
+      points = [];
+      markers.forEach(function(point) {
+          points.push(point.marker.geometry.coordinates)
+      });
+      bound = layer.toGeoJSON().geometry.coordinates
+      var ptsWithin = turf.pointsWithinPolygon(turf.points(points), turf.polygon(bound));
+      console.log(ptsWithin);
+      mymap.addLayer(layer);
+
+      selected_markers = []
+
+      markers.forEach(function(point) {
+        ptsWithin.features.forEach(function(within_point) {
+          if(point.marker.geometry.coordinates[0]==within_point.geometry.coordinates[0] && point.marker.geometry.coordinates[1]==within_point.geometry.coordinates[1]){
+              selected_markers.push(point.id)
+          }
+        });
+
+      });
+      console.log(selected_markers);
+      $('#id_mul_sensors').val(JSON.stringify(selected_markers));
+   });
+
+  </script>
+{% endblock %}
