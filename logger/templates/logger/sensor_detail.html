@@ -23,7 +23,7 @@
 
   </script>
 </div>
-<div class="col-lg-6">
+<div class="col-lg-6" style="height:100%;">
   <ul>
   <li>Name: {{sensor.name}}</li>
   <li>Description: {{sensor.description}}</li>
@@ -32,11 +32,11 @@
   <li>Longitude: {{sensor.coordinates.x}}</li>
 </ul>
 <a href="/sensors/export/{{sensor.id}}" class="btn btn-default" role="button">Export Data</a>
-<div class="table-responsive">
+<div class="table-responsive" style="height:40%">
 <table class="table table-striped">
   <thead>
     <tr>
-      <th>Particulate Matter</th>
+      <th>PM 2.5 Density (μg/m^3)</th>
       <th>Created at</th>
       <th>Received at</th>
     </tr>
@@ -45,8 +45,8 @@
     {% for row in data %}
     <tr>
       <td>{{row.particulate_matter}}</td>
-      <td>{{row.created_at}}</td>
-      <td>{{row.received_at}}</td>
+      <td>{{row.created_at|date:'Y-m-d H:i:s'}}</td>
+      <td>{{row.received_at|date:'Y-m-d H:i:s'}}</td>
     </tr>
     {% endfor %}
   </tbody>

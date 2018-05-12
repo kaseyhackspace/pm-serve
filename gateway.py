@@ -16,7 +16,7 @@ def main(args):
         str = bstr.decode('utf-8')
         data = json.loads(str)
         print(data['density'])
-        r = requests.post("https://dc8c5fe4.ngrok.io/sensors/data/add", data=data)
+        r = requests.post("https://32ee5fa6.ngrok.io/sensors/data/add", data=data)
         print(r.text)
 
 if __name__ == '__main__':

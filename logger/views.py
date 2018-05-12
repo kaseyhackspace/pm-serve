@@ -28,8 +28,16 @@ def sensor_export_poly(request):
             sensors = Sensor.objects.filter(pk__in=json.loads(form.cleaned_data['mul_sensors']))
             queryset = SensorData.objects.filter(sensor__in=sensors).filter(created_at__gte = form.cleaned_data['start_date']).filter(created_at__lte = form.cleaned_data['end_date'])
             dataset = sensor_data_resource.export(queryset)
+
+            download = Download()
+            download.owner = request.user
+            download.sensors_set = sensors
+            download.start_date = form.cleaned_data['start_date']
+            download.end_date = form.cleaned_data['end_date']
+            download.save()
+
             response = HttpResponse(dataset.csv, content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename="persons.csv"'
+            response['Content-Disposition'] = 'attachment; filename="sensors.csv"'
             return response
     else:
         sensors = Sensor.objects.all()
@@ -49,6 +57,14 @@ def sensor_export(request,sensor_id):
             queryset = SensorData.objects.filter(sensor=sensor).filter(created_at__gte = form.cleaned_data['start_date']).filter(created_at__lte = form.cleaned_data['end_date'])
             print(queryset)
             dataset = sensor_data_resource.export(queryset)
+
+            download = Download()
+            download.owner = request.user
+            download.sensors_set = [sensor]
+            download.start_date = form.cleaned_data['start_date']
+            download.end_date = form.cleaned_data['end_date']
+            download.save()
+
             response = HttpResponse(dataset.csv, content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename="sensor.csv"'
             return response
@@ -77,6 +93,11 @@ def add_data(request):
 
 def map_sensors(request):
     sensors = Sensor.objects.all()
+    for sensor in sensors:
+        if sensor.sensordata_set.last():
+            sensor.pm = sensor.sensordata_set.order_by('created_at').last().particulate_matter
+        else:
+            sensor.pm = 0
     return render(request,'logger/map_sensors.html',{'sensors': sensors})
 
 def heatmap(request):
@@ -88,10 +109,11 @@ def heatmap(request):
         else:
             pm = 0
         data.append([sensor,pm])
-    print(data[0][0].coordinates)
     return render(request,'logger/heatmap.html',{'data': data})
 
 def sensor_detail(request,sensor_id):
     sensor = Sensor.objects.get(id=sensor_id)
-    data = sensor.sensordata_set.order_by('created_at').all()
+    data = sensor.sensordata_set.order_by('-created_at').all()
+    for log in data:
+        log.created_at = log.created_at - datetime.timedelta(hours = 8)
     return render(request,'logger/sensor_detail.html',{'sensor': sensor, 'data':data})
